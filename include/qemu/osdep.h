@@ -69,6 +69,11 @@
 #include "sysemu/os-posix.h"
 #endif
 
+#ifdef CONFIG_DARWIN
+#include <AvailabilityMacros.h>
+#include <pthread.h>
+#endif
+
 #include "qapi/error.h"
 
 #if defined(CONFIG_SOLARIS) && CONFIG_SOLARIS_VERSION < 10
@@ -314,5 +319,23 @@ int qemu_read_password(char *buf, int buf_size);
  * or -1 on failure.
  */
 pid_t qemu_fork(Error **errp);
+
+#if defined(CONFIG_DARWIN) && defined(__aarch64__)
+static inline void qemu_thread_jit_execute(void)
+{
+    if (__builtin_available(macOS 11.0, *)) {
+        pthread_jit_write_protect_np(true);
+    }
+}
+static inline void qemu_thread_jit_write(void)
+{
+    if (__builtin_available(macOS 11.0, *)) {
+        pthread_jit_write_protect_np(false);
+    }
+}
+#else
+static inline void qemu_thread_jit_execute(void) {}
+static inline void qemu_thread_jit_write(void) {}
+#endif
 
 #endif
