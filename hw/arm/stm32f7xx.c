@@ -28,6 +28,7 @@
 #include "hw/ssi.h"
 #include "hw/block/flash.h"
 #include "sysemu/blockdev.h" // drive_get
+#include "sysemu/sysemu.h"
 
 static const char *stm32f7xx_periph_name_arr[] = {
     ENUM_STRING(STM32_UART1),
