@@ -7,7 +7,7 @@
 extern EGLDisplay *qemu_egl_display;
 extern EGLConfig qemu_egl_config;
 
-EGLSurface qemu_egl_init_surface_x11(EGLContext ectx, Window win);
+EGLSurface qemu_egl_init_surface_x11(EGLContext ectx, EGLNativeWindowType win);
 
 int qemu_egl_init_dpy(EGLNativeDisplayType dpy, bool gles, bool debug);
 EGLContext qemu_egl_init_ctx(void);
