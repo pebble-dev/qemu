@@ -672,6 +672,13 @@ static inline void *alloc_code_gen_buffer(void)
 #  endif
 # endif
 
+#if defined(CONFIG_DARWIN) && defined(__aarch64__)
+    // A change to mprotect in macOS 11.2 on Apple Silicon prevents the call from working on
+    // regions without the MAP_JIT flag. There's also some manual switching required between
+    // RW and RX perms needed - see calls to qemu_thread_jit_(write|execute).
+    flags |= MAP_JIT;
+#endif
+
     buf = mmap((void *)start, size + qemu_real_host_page_size,
                PROT_NONE, flags, -1, 0);
     if (buf == MAP_FAILED) {
@@ -975,6 +982,8 @@ void tb_phys_invalidate(TranslationBlock *tb, tb_page_addr_t page_addr)
     tb_page_addr_t phys_pc;
     TranslationBlock *tb1, *tb2;
 
+    qemu_thread_jit_write();
+
     /* remove the TB from the hash list */
     phys_pc = tb->page_addr[0] + (tb->pc & ~TARGET_PAGE_MASK);
     h = tb_phys_hash_func(phys_pc);
@@ -1022,6 +1031,8 @@ void tb_phys_invalidate(TranslationBlock *tb, tb_page_addr_t page_addr)
     tb->jmp_first = (TranslationBlock *)((uintptr_t)tb | 2); /* fail safe */
 
     tcg_ctx.tb_ctx.tb_phys_invalidate_count++;
+
+    qemu_thread_jit_execute();
 }
 
 static void build_page_bitmap(PageDesc *p)
@@ -1067,6 +1078,8 @@ TranslationBlock *tb_gen_code(CPUState *cpu,
 #ifdef CONFIG_PROFILER
     int64_t ti;
 #endif
+
+    qemu_thread_jit_write();
 
     phys_pc = get_page_addr_code(env, pc);
     if (use_icount && !(cflags & CF_IGNORE_ICOUNT)) {
