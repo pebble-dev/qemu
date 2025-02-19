@@ -45,6 +45,7 @@ extern char **environ;
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/sysmacros.h>
 #include <net/if.h>
 
 #ifdef FIFREEZE
