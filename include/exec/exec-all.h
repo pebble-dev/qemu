@@ -324,6 +324,7 @@ static inline void tb_add_jump(TranslationBlock *tb, int n,
 {
     /* NOTE: this test is only needed for thread safety */
     if (!tb->jmp_next[n]) {
+        qemu_thread_jit_write();
         /* patch the native jump address */
         tb_set_jmp_target(tb, n, (uintptr_t)tb_next->tc_ptr);
 

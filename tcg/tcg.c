@@ -373,6 +373,7 @@ void tcg_prologue_init(TCGContext *s)
     s->code_gen_prologue = buf0;
 
     /* Generate the prologue.  */
+    qemu_thread_jit_write();
     tcg_target_qemu_prologue(s);
     buf1 = s->code_ptr;
     flush_icache_range((uintptr_t)buf0, (uintptr_t)buf1);

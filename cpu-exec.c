@@ -154,6 +154,7 @@ static inline tcg_target_ulong cpu_tb_exec(CPUState *cpu, uint8_t *tb_ptr)
 #endif /* DEBUG_DISAS */
 
     cpu->can_do_io = !use_icount;
+    qemu_thread_jit_execute();
     next_tb = tcg_qemu_tb_exec(env, tb_ptr);
     cpu->can_do_io = 1;
     trace_exec_tb_exit((void *) (next_tb & ~TB_EXIT_MASK),
