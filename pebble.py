@@ -54,7 +54,7 @@ if __name__ == '__main__':
     if args.vnc_ws:
         cmd_line += "-vnc :1,websocket=4444 "
 
-    print "Executing command line: \n   ", cmd_line
+    print("Executing command line: \n   ", cmd_line)
     os.system(cmd_line)
 
 

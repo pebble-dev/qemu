@@ -252,12 +252,12 @@ for line in fileinput.input():
     lineno = lineno + 1
     debug = "input line %d: %s" % (lineno, line)
     #ASL listing: space, then line#, then ...., then code
-    pasl = re.compile('^\s+([0-9]+)(:\s\s|\.\.\.\.)\s*')
+    pasl = re.compile(r'^\s+([0-9]+)(:\s\s|\.\.\.\.)\s*')
     m = pasl.search(line)
     if (m):
         add_asl(lineno, pasl.sub("", line));
     # AML listing: offset in hex, then ...., then code
-    paml = re.compile('^([0-9A-Fa-f]+)(:\s\s|\.\.\.\.)\s*')
+    paml = re.compile(r'^([0-9A-Fa-f]+)(:\s\s|\.\.\.\.)\s*')
     m = paml.search(line)
     if (m):
         add_aml(m.group(1), paml.sub("", line))
@@ -357,7 +357,7 @@ def get_value_type(maxvalue):
             return "char"
 
 # Pretty print output
-for array in output.keys():
+for array in list(output.keys()):
     otype = get_value_type(max(output[array]))
     odata = []
     for value in output[array]:

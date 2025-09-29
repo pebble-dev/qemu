@@ -12,12 +12,11 @@
 # See the COPYING file in the top-level directory.
 
 import re
-from ordereddict import OrderedDict
+from collections import OrderedDict
 import errno
 import getopt
 import os
 import sys
-import string
 
 builtin_types = {
     'str':      'QTYPE_QSTRING',
@@ -152,7 +151,7 @@ class QAPISchemaParser(object):
                     continue
                 try:
                     fobj = open(incl_abs_fname, 'r')
-                except IOError, e:
+                except IOError as e:
                     raise QAPIExprError(expr_info,
                                         '%s: %s' % (e.strerror, include))
                 exprs_include = QAPISchemaParser(fobj, previously_included,
@@ -487,7 +486,7 @@ def check_type(expr_info, source, value, allow_array=False,
                             "%s should be a dictionary or type name" % source)
 
     # value is a dictionary, check that each member is okay
-    for (key, arg) in value.items():
+    for (key, arg) in list(value.items()):
         check_name(expr_info, "Member of %s" % source, key,
                    allow_optional=allow_optional)
         if c_name(key, False) == 'u' or c_name(key, False).startswith('has_'):
@@ -506,7 +505,7 @@ def check_member_clash(expr_info, base_name, data, source=""):
     base = find_struct(base_name)
     assert base
     base_members = base['data']
-    for key in data.keys():
+    for key in list(data.keys()):
         if key.startswith('*'):
             key = key[1:]
         if key in base_members or "*" + key in base_members:
@@ -593,7 +592,7 @@ def check_union(expr, expr_info):
                                 "type" % discriminator)
 
     # Check every branch
-    for (key, value) in members.items():
+    for (key, value) in list(members.items()):
         check_name(expr_info, "Member of union '%s'" % name, key)
 
         # Each value must name a known type; furthermore, in flat unions,
@@ -638,7 +637,7 @@ def check_alternate(expr, expr_info):
     types_seen = {}
 
     # Check every branch
-    for (key, value) in members.items():
+    for (key, value) in list(members.items()):
         check_name(expr_info, "Member of alternate '%s'" % name, key)
 
         # Check for conflicts in the generated enum
@@ -706,7 +705,7 @@ def check_keys(expr_elem, meta, required, optional=[]):
         raise QAPIExprError(info,
                             "'%s' key must have a string value" % meta)
     required = required + [meta]
-    for (key, value) in expr.items():
+    for (key, value) in list(expr.items()):
         if key not in required and key not in optional:
             raise QAPIExprError(info,
                                 "Unknown key '%s' in %s '%s'"
@@ -726,7 +725,7 @@ def check_exprs(exprs):
     global all_names
 
     # Learn the types and check for valid expression keys
-    for builtin in builtin_types.keys():
+    for builtin in list(builtin_types.keys()):
         all_names[builtin] = 'built-in'
     for expr_elem in exprs:
         expr = expr_elem['expr']
@@ -1148,8 +1147,8 @@ class QAPISchema(object):
             self._predefining = False
             self._def_exprs()
             self.check()
-        except (QAPISchemaError, QAPIExprError), err:
-            print >>sys.stderr, err
+        except (QAPISchemaError, QAPIExprError) as err:
+            print(err, file=sys.stderr)
             exit(1)
 
     def _def_entity(self, ent):
@@ -1235,7 +1234,7 @@ class QAPISchema(object):
 
     def _make_members(self, data, info):
         return [self._make_member(key, value, info)
-                for (key, value) in data.iteritems()]
+                for (key, value) in data.items()]
 
     def _def_struct_type(self, expr, info):
         name = expr['struct']
@@ -1269,10 +1268,10 @@ class QAPISchema(object):
         tag_member = None
         if tag_name:
             variants = [self._make_variant(key, value)
-                        for (key, value) in data.iteritems()]
+                        for (key, value) in data.items()]
         else:
             variants = [self._make_simple_variant(key, value, info)
-                        for (key, value) in data.iteritems()]
+                        for (key, value) in data.items()]
             tag_member = self._make_implicit_tag(name, info, variants)
         self._def_entity(
             QAPISchemaObjectType(name, info, base,
@@ -1285,7 +1284,7 @@ class QAPISchema(object):
         name = expr['alternate']
         data = expr['data']
         variants = [self._make_variant(key, value)
-                    for (key, value) in data.iteritems()]
+                    for (key, value) in data.items()]
         tag_member = self._make_implicit_tag(name, info, variants)
         self._def_entity(
             QAPISchemaAlternateType(name, info,
@@ -1336,7 +1335,7 @@ class QAPISchema(object):
                 assert False
 
     def check(self):
-        for ent in self._entity_dict.values():
+        for ent in list(self._entity_dict.values()):
             ent.check(self)
 
     def visit(self, visitor):
@@ -1392,7 +1391,7 @@ def c_enum_const(type_name, const_name, prefix=None):
         type_name = prefix
     return camel_to_upper(type_name + '_' + const_name)
 
-c_name_trans = string.maketrans('.-', '__')
+c_name_trans = str.maketrans('.-', '__')
 
 
 # Map @name to a valid C identifier.
@@ -1639,8 +1638,8 @@ def parse_command_line(extra_options="", extra_long_options=[]):
                                        "chp:o:" + extra_options,
                                        ["source", "header", "prefix=",
                                         "output-dir="] + extra_long_options)
-    except getopt.GetoptError, err:
-        print >>sys.stderr, "%s: %s" % (sys.argv[0], str(err))
+    except getopt.GetoptError as err:
+        print("%s: %s" % (sys.argv[0], str(err)), file=sys.stderr)
         sys.exit(1)
 
     output_dir = ""
@@ -1654,9 +1653,8 @@ def parse_command_line(extra_options="", extra_long_options=[]):
         if o in ("-p", "--prefix"):
             match = re.match('([A-Za-z_.-][A-Za-z0-9_.-]*)?', a)
             if match.end() != len(a):
-                print >>sys.stderr, \
-                    "%s: 'funny character '%s' in argument of --prefix" \
-                    % (sys.argv[0], a[match.end()])
+                print("%s: 'funny character '%s' in argument of --prefix" \
+                    % (sys.argv[0], a[match.end()]), file=sys.stderr)
                 sys.exit(1)
             prefix = a
         elif o in ("-o", "--output-dir"):
@@ -1673,7 +1671,7 @@ def parse_command_line(extra_options="", extra_long_options=[]):
         do_h = True
 
     if len(args) != 1:
-        print >>sys.stderr, "%s: need exactly one argument" % sys.argv[0]
+        print("%s: need exactly one argument" % sys.argv[0], file=sys.stderr)
         sys.exit(1)
     fname = args[0]
 
@@ -1693,7 +1691,7 @@ def open_output(output_dir, do_c, do_h, prefix, c_file, h_file,
     if output_dir:
         try:
             os.makedirs(output_dir)
-        except os.error, e:
+        except os.error as e:
             if e.errno != errno.EEXIST:
                 raise
 
@@ -1701,8 +1699,8 @@ def open_output(output_dir, do_c, do_h, prefix, c_file, h_file,
         if really:
             return open(name, opt)
         else:
-            import StringIO
-            return StringIO.StringIO()
+            import io
+            return io.StringIO()
 
     fdef = maybe_open(do_c, c_file, 'w')
     fdecl = maybe_open(do_h, h_file, 'w')

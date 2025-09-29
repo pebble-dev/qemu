@@ -19,7 +19,6 @@
 import os
 import re
 import subprocess
-import string
 import unittest
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'scripts'))
@@ -93,7 +92,7 @@ def compare_images(img1, img2):
 
 def create_image(name, size):
     '''Create a fully-allocated raw image with sector markers'''
-    file = open(name, 'w')
+    file = open(name, 'wb')
     i = 0
     while i < size:
         sector = struct.pack('>l504xl', i / 512, i / 512)
@@ -198,7 +197,7 @@ class VM(object):
         assert self._qmp.is_scm_available()
         bin = socket_scm_helper
         if os.path.exists(bin) == False:
-            print "Scm help program does not present, path '%s'." % bin
+            print("Scm help program does not present, path '%s'." % bin)
             return -1
         fd_param = ["%s" % bin,
                     "%d" % self._qmp.get_sock_fd(),
@@ -235,11 +234,11 @@ class VM(object):
             os.remove(self._qemu_log_path)
             self._popen = None
 
-    underscore_to_dash = string.maketrans('_', '-')
+    underscore_to_dash = str.maketrans('_', '-')
     def qmp(self, cmd, conv_keys=True, **args):
         '''Invoke a QMP command and return the result dict'''
         qmp_args = dict()
-        for k in args.keys():
+        for k in list(args.keys()):
             if conv_keys:
                 qmp_args[k.translate(self.underscore_to_dash)] = args[k]
             else:
@@ -367,7 +366,7 @@ class QMPTestCase(unittest.TestCase):
     def wait_ready_and_cancel(self, drive='drive0'):
         self.wait_ready(drive=drive)
         event = self.cancel_and_wait(drive=drive)
-        self.assertEquals(event['event'], 'BLOCK_JOB_COMPLETED')
+        self.assertEqual(event['event'], 'BLOCK_JOB_COMPLETED')
         self.assert_qmp(event, 'data/type', 'mirror')
         self.assert_qmp(event, 'data/offset', event['data']['len'])
 
@@ -388,7 +387,7 @@ def notrun(reason):
     seq = os.path.basename(sys.argv[0])
 
     open('%s/%s.notrun' % (output_dir, seq), 'wb').write(reason + '\n')
-    print '%s not run: %s' % (seq, reason)
+    print('%s not run: %s' % (seq, reason))
     sys.exit(0)
 
 def main(supported_fmts=[], supported_oses=['linux']):
@@ -404,13 +403,13 @@ def main(supported_fmts=[], supported_oses=['linux']):
 
     # We need to filter out the time taken from the output so that qemu-iotest
     # can reliably diff the results against master output.
-    import StringIO
+    import io
     if debug:
         output = sys.stdout
         verbosity = 2
         sys.argv.remove('-d')
     else:
-        output = StringIO.StringIO()
+        output = io.StringIO()
 
     class MyTestRunner(unittest.TextTestRunner):
         def __init__(self, stream=output, descriptions=True, verbosity=verbosity):

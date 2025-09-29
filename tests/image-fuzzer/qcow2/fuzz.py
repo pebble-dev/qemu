@@ -17,6 +17,7 @@
 #
 
 import random
+from functools import reduce
 
 UINT8 = 0xff
 UINT16 = 0xffff
@@ -66,7 +67,7 @@ def random_bits(bit_ranges):
     bit_numbers = []
     # Select random amount of random positions in bit_ranges
     for rng in bit_ranges:
-        bit_numbers += random.sample(range(rng[0], rng[1] + 1),
+        bit_numbers += random.sample(list(range(rng[0], rng[1] + 1)),
                                      random.randint(0, rng[1] - rng[0] + 1))
     val = 0
     # Set bits on selected positions to ones

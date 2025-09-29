@@ -18,7 +18,7 @@
 
 import random
 import struct
-import fuzz
+from . import fuzz
 from math import ceil
 from os import urandom
 from itertools import chain
@@ -297,8 +297,8 @@ class Image(object):
             l2 = []
         else:
             meta_data = self._get_metadata()
-            guest_clusters = random.sample(range(self.image_size /
-                                                 self.cluster_size),
+            guest_clusters = random.sample(list(range(self.image_size /
+                                                 self.cluster_size)),
                                            len(self.data_clusters))
             # Number of entries in a L1/L2 table
             l_size = self.cluster_size / UINT64_S
@@ -587,7 +587,7 @@ class Image(object):
         """Return a set of random indices of clusters allocated for guest data.
         """
         num_of_cls = img_size/cluster_size
-        return set(random.sample(range(1, num_of_cls + 1),
+        return set(random.sample(list(range(1, num_of_cls + 1)),
                                  random.randint(0, num_of_cls)))
 
     def _get_metadata(self):

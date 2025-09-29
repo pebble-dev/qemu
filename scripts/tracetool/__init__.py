@@ -139,12 +139,12 @@ class Event(object):
 
     """
 
-    _CRE = re.compile("((?P<props>[\w\s]+)\s+)?"
-                      "(?P<name>\w+)"
-                      "\((?P<args>[^)]*)\)"
-                      "\s*"
-                      "(?:(?:(?P<fmt_trans>\".+),)?\s*(?P<fmt>\".+))?"
-                      "\s*")
+    _CRE = re.compile(r"((?P<props>[\w\s]+)\s+)?"
+                      r"(?P<name>\w+)"
+                      r"\((?P<args>[^)]*)\)"
+                      r"\s*"
+                      r"(?:(?:(?P<fmt_trans>\".+),)?\s*(?P<fmt>\".+))?"
+                      r"\s*")
 
     _VALID_PROPS = set(["disable", "tcg", "tcg-trans", "tcg-exec"])
 
@@ -228,7 +228,7 @@ class Event(object):
                                           self.args,
                                           fmt)
 
-    _FMT = re.compile("(%[\d\.]*\w+|%.*PRI\S+)")
+    _FMT = re.compile(r"(%[\d\.]*\w+|%.*PRI\S+)")
 
     def formats(self):
         """List of argument print formats."""

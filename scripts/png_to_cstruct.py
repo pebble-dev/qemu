@@ -49,23 +49,23 @@ def png_to_bytes(png_reader, converter=to_rgb222):
 def png_to_cstruct(png_reader, dst_name, var_name):
     height, width, image = png_to_bytes(png_reader)
 
-    print "// C struct format image converted from '%s' using png_to_cstruct.py" % args.src.name
-    print "static uint8_t *get_%s_image(int *width, int *height) {\n" % (var_name)
-    print "    *width = %d;" % (width)
-    print "    *height = %d;" % (height)
-    print "    static uint8_t %s[%d] = {\n" % (var_name, width*height)
+    print("// C struct format image converted from '%s' using png_to_cstruct.py" % args.src.name)
+    print("static uint8_t *get_%s_image(int *width, int *height) {\n" % (var_name))
+    print("    *width = %d;" % (width))
+    print("    *height = %d;" % (height))
+    print("    static uint8_t %s[%d] = {\n" % (var_name, width*height))
 
     for line in image:
-        print "      ",
+        print("      ", end=' ')
         for i, pixel in enumerate(line):
             if (i > 0) and (i % 12) == 0:
-                print "\n      ",
-            print " 0x%02x," % pixel,
-        print "\n"
+                print("\n      ", end=' ')
+            print(" 0x%02x," % pixel, end=' ')
+        print("\n")
 
-    print "    };"
-    print "    return %s;" % (var_name)
-    print "}"
+    print("    };")
+    print("    return %s;" % (var_name))
+    print("}")
 
 
 if __name__=='__main__':

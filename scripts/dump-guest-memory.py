@@ -136,7 +136,7 @@ shape and this command should mostly work."""
         self.guest_phys_blocks = []
 
     def guest_phys_blocks_append(self):
-        print "guest RAM blocks:"
+        print("guest RAM blocks:")
         print ("target_start     target_end       host_addr        message "
                "count")
         print ("---------------- ---------------- ---------------- ------- "
@@ -187,9 +187,9 @@ shape and this command should mostly work."""
                 predecessor["target_end"] = target_end
                 message = "joined"
 
-            print ("%016x %016x %016x %-7s %5u" %
+            print(("%016x %016x %016x %-7s %5u" %
                    (target_start, target_end, host_addr.cast(self.uintptr_t),
-                    message, len(self.guest_phys_blocks)))
+                    message, len(self.guest_phys_blocks))))
 
     def cpu_get_dump_info(self):
         # We can't synchronize the registers with KVM post-mortem, and
@@ -309,8 +309,8 @@ shape and this command should mostly work."""
         for block in self.guest_phys_blocks:
             cur  = block["host_addr"]
             left = block["target_end"] - block["target_start"]
-            print ("dumping range at %016x for length %016x" %
-                   (cur.cast(self.uintptr_t), left))
+            print(("dumping range at %016x for length %016x" %
+                   (cur.cast(self.uintptr_t), left)))
             while (left > 0):
                 chunk_size = min(self.TARGET_PAGE_SIZE, left)
                 chunk = qemu_core.read_memory(cur, chunk_size)
